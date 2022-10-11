@@ -57,6 +57,8 @@
 
 
 - Написать функционал на Unity, в котором будет воспризводиться аудио-файл в зависимости от значения данных из таблицы.
+
+''
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,7 +77,7 @@ private Dictionary<string,float> dataSet = new Dictionary<string,float>();
 private bool statusStart = false;
 private int i = 1;
 
-    // Start is called before the first frame update
+
     void Start()
     {
        StartCoroutine(GoogleSheets());
@@ -149,6 +151,7 @@ private int i = 1;
         i++;
     }
 }
+''
 
 
 
