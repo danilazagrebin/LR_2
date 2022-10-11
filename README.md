@@ -58,7 +58,7 @@
 
 - Написать функционал на Unity, в котором будет воспризводиться аудио-файл в зависимости от значения данных из таблицы.
 
-'' Начало кода
+``
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -151,7 +151,7 @@ private int i = 1;
         i++;
     }
 }
-Конец кода
+``
 
 
 
@@ -162,7 +162,7 @@ private int i = 1;
 #Import the required modules, numpy for calculation, and Matplotlib for drawing
 
 Взял код из первой лабораторной и преобразовал его, чтобы связать с google таблицей.
-
+```
 import numpy as np
 import gspread
 gc = gspread.service_account(filename='lr-2-2-60c96be9dd05.json')
@@ -235,7 +235,7 @@ while i <= len(mon):
         sh.sheet1.update(('A' + str(i)), str(i))
         sh.sheet1.update(('B' + str(i)), str(tempInf))
         print(tempInf)
-
+```
 
 ## Выводы
 
