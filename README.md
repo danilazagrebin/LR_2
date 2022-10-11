@@ -57,68 +57,184 @@
 
 
 - Написать функционал на Unity, в котором будет воспризводиться аудио-файл в зависимости от значения данных из таблицы.
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using SimpleJSON;
+
+public class NewBehaviourScript : MonoBehaviour
+{
+    public AudioClip goodSpeak;
+
+public AudioClip normalSpeak;
+
+public AudioClip badSpeak;
+private AudioSource selectAudio;
+private Dictionary<string,float> dataSet = new Dictionary<string,float>();
+private bool statusStart = false;
+private int i = 1;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+       StartCoroutine(GoogleSheets());
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (dataSet["Mon_" + i.ToString()] <= 10 & statusStart == false & i != dataSet.Count)
+        {
+            StartCoroutine(PlaySelectAudioGood());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
+
+        if (dataSet["Mon_" + i.ToString()] > 10 & dataSet["Mon_" + i.ToString()] < 100 & statusStart == false & i != dataSet.Count)
+        {
+            StartCoroutine(PlaySelectAudioNormal());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
+
+        if (dataSet["Mon_" + i.ToString()] >= 100 & statusStart == false & i != dataSet.Count)
+        {
+            StartCoroutine(PlaySelectAudioBad());
+            Debug.Log(dataSet["Mon_" + i.ToString()]);
+        }
+    }
+
+    IEnumerator GoogleSheets()
+    {
+        UnityWebRequest curentResp = UnityWebRequest.Get("https://sheets.googleapis.com/v4/spreadsheets/1yCNUMDQsfWEJdTMeGwGsjSK8GJ6ZVnP269S-sDcEirY/values/Лист1?key=AIzaSyAHJY8hqDyNUacM0_fRdUAExpiNZ55ACLE");
+        yield return curentResp.SendWebRequest();
+        string rawResp = curentResp.downloadHandler.text;
+        var rawJson = JSON.Parse(rawResp); 
+        foreach (var itemRawJson in rawJson["values"])
+        {
+        var parseJson = JSON.Parse(itemRawJson.ToString());
+        var selectRow = parseJson[0].AsStringList;
+        dataSet.Add(("Mon_" + selectRow[0]), float.Parse(selectRow[2]));
+        }
+    } 
+
+    IEnumerator PlaySelectAudioGood()
+    {
+        statusStart = true;
+        selectAudio = GetComponent<AudioSource>();
+        selectAudio.clip = goodSpeak;
+        selectAudio.Play();
+        yield return new WaitForSeconds(3);
+        statusStart = false;
+        i++;
+    }
+    IEnumerator PlaySelectAudioNormal()
+    {
+        statusStart = true;
+        selectAudio = GetComponent<AudioSource>();
+        selectAudio.clip = normalSpeak;
+        selectAudio.Play();
+        yield return new WaitForSeconds(3);
+        statusStart = false;
+        i++;
+    }
+    IEnumerator PlaySelectAudioBad()
+    {
+        statusStart = true;
+        selectAudio = GetComponent<AudioSource>();
+        selectAudio.clip = badSpeak;
+        selectAudio.Play();
+        yield return new WaitForSeconds(4);
+        statusStart = false;
+        i++;
+    }
+}
 
 
 
 ## Задание 2
-### Должна ли величина loss стремиться к нулю при изменении исходных данных? Ответьте на вопрос, приведите пример выполнения кода, который подтверждает ваш ответ.
+### Реализовать запись в Google-таблицу набора данных, полученных с помощью линейной регрессии из лабораторной работы № 1. 
+![image](https://user-images.githubusercontent.com/114522298/195174429-63e5768e-6ae2-48a0-a3c6-73f9652ec571.png)
+![image](https://user-images.githubusercontent.com/114522298/195174459-35bd70f5-149e-498e-8258-06496ffbc93a.png)
+#Import the required modules, numpy for calculation, and Matplotlib for drawing
 
-- Перечисленные в этом туториале действия могут быть выполнены запуском на исполнение скрипт-файла, доступного [в репозитории](https://github.com/Den1sovDm1triy/hfss-scripting/blob/main/ScreatingSphereInAEDT.py).
-- Для запуска скрипт-файла откройте Ansys Electronics Desktop. Перейдите во вкладку [Automation] - [Run Script] - [Выберите файл с именем ScreatingSphereInAEDT.py из репозитория].
+import numpy as np
+import gspread
+gc = gspread.service_account(filename='lr-2-2-60c96be9dd05.json')
+sh = gc.open("LR-2-2")
+# define data, and change list to array
+x = [3,21,22,34,54,34,55,67,89,99]
+x = np.array(x)
+y = [2,22,24,65,79,82,55,130,150,199]
+y = np.array(y)
 
-```py
 
-import ScriptEnv
-ScriptEnv.Initialize("Ansoft.ElectronicsDesktop")
-oDesktop.RestoreWindow()
-oProject = oDesktop.NewProject()
-oProject.Rename("C:/Users/denisov.dv/Documents/Ansoft/SphereDIffraction.aedt", True)
-oProject.InsertDesign("HFSS", "HFSSDesign1", "HFSS Terminal Network", "")
-oDesign = oProject.SetActiveDesign("HFSSDesign1")
-oEditor = oDesign.SetActiveEditor("3D Modeler")
-oEditor.CreateSphere(
-	[
-		"NAME:SphereParameters",
-		"XCenter:="		, "0mm",
-		"YCenter:="		, "0mm",
-		"ZCenter:="		, "0mm",
-		"Radius:="		, "1.0770329614269mm"
-	], 
-)
+# define data, and change list to array
+x = [3,21,22,34,54,34,55,67,89,99]
+x = np.array(x)
+y = [2,22,24,65,79,82,55,130,150,199]
+y = np.array(y)
 
-```
+#The basic linear regression model is wx+ b, and since this is a two-dimensional space, the model is ax+ b
 
-## Задание 3
-### Какова роль параметра Lr? Ответьте на вопрос, приведите пример выполнения кода, который подтверждает ваш ответ. В качестве эксперимента можете изменить значение параметра.
+def model(a, b, x):
+    return a*x + b
 
-- Перечисленные в этом туториале действия могут быть выполнены запуском на исполнение скрипт-файла, доступного [в репозитории](https://github.com/Den1sovDm1triy/hfss-scripting/blob/main/ScreatingSphereInAEDT.py).
-- Для запуска скрипт-файла откройте Ansys Electronics Desktop. Перейдите во вкладку [Automation] - [Run Script] - [Выберите файл с именем ScreatingSphereInAEDT.py из репозитория].
+#Tahe most commonly used loss function of linear regression model is the loss function of mean variance difference
+def loss_function(a, b, x, y):
+    num = len(x)
+    prediction=model(a,b,x)
+    return (0.5/num) * (np.square(prediction-y)).sum()
 
-```py
+#The optimization function mainly USES partial derivatives to update two parameters a and b
+def optimize(a,b,x,y):
+    num = len(x)
+    prediction = model(a,b,x)
+    #Update the values of A and B by finding the partial derivatives of the loss function on a and b
+    da = (1.0/num) * ((prediction -y)*x).sum()
+    db = (1.0/num) * ((prediction -y).sum())
+    a = a - Lr*da
+    b = b - Lr*db
+    return a, b
 
-import ScriptEnv
-ScriptEnv.Initialize("Ansoft.ElectronicsDesktop")
-oDesktop.RestoreWindow()
-oProject = oDesktop.NewProject()
-oProject.Rename("C:/Users/denisov.dv/Documents/Ansoft/SphereDIffraction.aedt", True)
-oProject.InsertDesign("HFSS", "HFSSDesign1", "HFSS Terminal Network", "")
-oDesign = oProject.SetActiveDesign("HFSSDesign1")
-oEditor = oDesign.SetActiveEditor("3D Modeler")
-oEditor.CreateSphere(
-	[
-		"NAME:SphereParameters",
-		"XCenter:="		, "0mm",
-		"YCenter:="		, "0mm",
-		"ZCenter:="		, "0mm",
-		"Radius:="		, "1.0770329614269mm"
-	], 
-)
+#iterated function, return a and b
+def iterate(a,b,x,y,times):
+    for i in range(times):
+        a,b = optimize(a,b,x,y)
+    return a,b
 
-```
+#Initialize parameters and display
+a = np.random.rand(1)
+print(a)
+b = np.random.rand(1)
+print(b)
+Lr = 0.000001
+
+a,b = iterate(a,b,x,y,100)
+prediction=model(a,b,x)
+loss = loss_function(a, b, x, y)
+print(a,b,loss)
+
+mon = list(range(1,20))
+i = 0
+while i <= len(mon):
+    i += 1
+    if i == 0:
+        continue
+    else:
+        a, b = iterate(a, b, x, y, 100)
+        prediction = model(a, b, x)
+        loss = loss_function(a, b, x, y)
+        tempInf = str(loss)
+        tempInf = tempInf.replace('.', ',')
+        sh.sheet1.update(('A' + str(i)), str(i))
+        sh.sheet1.update(('B' + str(i)), str(tempInf))
+        print(tempInf)
+
 
 ## Выводы
 
-Абзац умных слов о том, что было сделано и что было узнано.
+В лабораторной работе я познакомился с такими сервисами, как Google Cloud, Google sheets. Также я научился связывать программу написанную на языке Python с таблицей google Sheets, еще я научился реализовывать совместную работу и передачу данных в связке Python - Google-Sheets – Unity.
 
 | Plugin | README |
 | ------ | ------ |
